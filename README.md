@@ -10,11 +10,27 @@ Extracts messages from the bytes stored in messages.data sqlite column of Telegr
 
 `python message-extractor.py <path>`
 
-- `<path>` path to the byte file you need to extract manually from Telegram's sqlite database
+- `<path>` path to the byte file you need to extract manually from the Telegram's sqlite database
 
 ### Example
 
 `python message-extractor.py examples/regular-message-1.dat`
+
+
+## Encrypted Chat headers extractor
+
+Extracts info from the bytes stored in enc_chats.data sqlite column of Telegram which contains the secret chat's main auth_key secret and other.
+
+### Usage
+
+`python encrypted-chat-extractor.py <path>`
+
+- `<path>` path to the byte file you need to extract manually from the Telegram's sqlite database
+
+### Example
+
+`python encrypted-chat-extractor.py examples/encrypted-chat-info.dat`
+
 
 
 ## License
