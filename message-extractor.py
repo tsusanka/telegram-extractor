@@ -18,7 +18,7 @@ def printByte(label, byte):
 @click.argument('path')
 def extractMessage(path):
     with open(path, 'rb') as f:
-        firstLabels = ['constr', 'flags', 'id', 'ttl?', 'from', 'to', 'date?', '??']
+        firstLabels = ['constr', 'flags', 'id', 'ttl?', 'from', 'to', 'date?', '?']
         for label in firstLabels:
             byte = f.read(4)
             printByte(label, byte)
