@@ -7,8 +7,14 @@ import click
 def hexToStr(byte):
     return binascii.hexlify(byte).decode()
 
-def printByte(label, byte):
-    print(label + ':\t' + hexToStr(byte))
+
+def printByte(indentSize, label, byte):
+    print('\t' * indentSize + label + ':\t' + hexToStr(byte))
+
+
+def indentPrint(indentSize, string):
+    print('\t' * indentSize + string)
+
 
 # Prints the first general headers
 def frontHeaders(f):
@@ -25,81 +31,69 @@ def frontHeaders(f):
         ('sessionSize', 4),
         ('session', 8),
     ]
-
     for label, count in labels:
         byte = f.read(count)
-        printByte(label, byte)
+        printByte(0, label, byte)
 
 
-def readIP(f):
+def parseBytes(f):
     numOfIPs = int.from_bytes(f.read(4), 'little') # usually 1
     for i in range(0, numOfIPs):
-        print('\t\tIP: ')
+        indentPrint(2, 'IP: ')
         IPlength = int.from_bytes(f.read(1), 'little')
-        if IPlength % 2 == 0: # ??? needs to be odd?
+        if IPlength % 2 == 0: # ? needs to be odd?
             IPlength += 1
         byte = f.read(IPlength)
-        print('\t\t\tbytes: ' + hexToStr(byte))
-        print('\t\t\tascii: ' + byte.decode('utf-8'))
+        indentPrint(3, 'bytes: ' + hexToStr(byte))
+        indentPrint(3, 'ascii: ' + byte.decode('utf-8'))
         byte = f.read(4)
-        print('\t\tport: ')
-        print('\t\t\tbytes: ' + hexToStr(byte))
-        print('\t\t\tnum: ' + str(int.from_bytes(byte, 'little')))
+        indentPrint(2, 'port: ')
+        indentPrint(3, 'bytes: ' + hexToStr(byte))
+        indentPrint(3, 'tnum: ' + str(int.from_bytes(byte, 'little')))
 
 
 def readAuth(f):
     length = int.from_bytes(f.read(4), 'little') # should be 256
-    print('\n\tauth_key: \t' + hexToStr(f.read(length)))
-    print('\tauth_key_id: \t' + hexToStr(f.read(8)))
+    indentPrint(1, 'auth_key: \t' + hexToStr(f.read(length)))
+    indentPrint(1, 'auth_key_id: \t' + hexToStr(f.read(8)))
 
 
 def salts(f):
     numOfSalts = int.from_bytes(f.read(4), 'little') # usually 1
-    print('\n\tserver salts:')
+    indentPrint(1, 'server salts:')
     for i in range(0, numOfSalts):
-        printByte('\t\tvalidSince', f.read(4))
-        printByte('\t\tvalidUntil', f.read(4))
-        printByte('\t\tserverSalt', f.read(8))
+        printByte(2, 'validSince', f.read(4))
+        printByte(2, 'validUntil', f.read(4))
+        printByte(2, 'serverSalt', f.read(8))
 
 
 # Prints info about all the datacenters
-def datacenters(f, numOfDatacenters):
+def datacenters(file, numOfDatacenters):
     for i in range(0, numOfDatacenters):
-        print('DATACENTER ' + str(i))
+        print('\nDATACENTER ' + str(i))
 
-        printByte('\tconfigVersion', f.read(4))
-        printByte('\tdataCenterId', f.read(4))
-        printByte('\tlastInitVer', f.read(4))
+        printByte(1, 'configVersion', file.read(4))
+        printByte(1, 'dataCenterId', file.read(4))
+        printByte(1, 'lastInitVer', file.read(4))
 
-        print('\taddress ipv4:')
-        readIP(f)
-        print('\taddress ipv6:')
-        readIP(f)
-        print('\taddress-download ipv4:')
-        readIP(f)
-        print('\taddress-download ipv6:')
-        readIP(f)
+        for ipLabel in ['IPv4', 'IPv6', 'download IPv4', 'download IPv6']:
+            print('\taddress ' + ipLabel + ':')
+            parseBytes(file)
 
-        readAuth(f)
-
-        printByte('\n\tauthorized', f.read(4))
-
-        salts(f)
+        readAuth(file)
+        printByte(1, 'authorized', file.read(4))
+        salts(file)
 
 
 @click.command()
 @click.argument('path')
 def extract(path):
-    print("0xb5757299 TRUE")
-    print("0x379779bc FALSE")
-    print("---------------")
-    with open(path, 'rb') as f:
 
-        frontHeaders(f)
-
-        numOfDatacenters = int.from_bytes(f.read(4), 'little')
-        print('\nDatacenters ' + '(' + str(numOfDatacenters) + '):')
-        datacenters(f, numOfDatacenters)
+    with open(path, 'rb') as file:
+        frontHeaders(file)
+        numOfDatacenters = int.from_bytes(file.read(4), 'little')
+        print('Datacenters ' + '(' + str(numOfDatacenters) + '):')
+        datacenters(file, numOfDatacenters)
 
 
 if __name__ == '__main__':
