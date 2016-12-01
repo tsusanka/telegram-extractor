@@ -1,6 +1,8 @@
 # Telegram Extractor
 
-Few Python 3 scripts to help analyse the data stored in the official [Telegram Android app](https://github.com/DrKLO/Telegram).
+Few scripts to help to analyse the data stored in the official [Telegram Android app](https://github.com/DrKLO/Telegram).
+
+Written in Python 3.
 
 ## Message extractor
 
@@ -17,7 +19,7 @@ Extracts messages from the bytes stored in messages.data sqlite column of Telegr
 `python message-extractor.py examples/regular-message-1.dat`
 
 
-## Encrypted Chat headers extractor
+## Encrypted chat info extractor
 
 Extracts info from the bytes stored in enc_chats.data sqlite column of Telegram which contains the secret chat's main auth_key secret and other.
 
