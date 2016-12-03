@@ -36,20 +36,42 @@ def frontHeaders(f):
         printByte(0, label, byte)
 
 
-def parseBytes(f):
+def parseIPBytes(f):
     numOfIPs = int.from_bytes(f.read(4), 'little') # usually 1
     for i in range(0, numOfIPs):
-        indentPrint(2, 'IP: ')
         IPlength = int.from_bytes(f.read(1), 'little')
+        indentPrint(2, 'IP: ')
         if IPlength % 2 == 0: # ? needs to be odd?
             IPlength += 1
         byte = f.read(IPlength)
         indentPrint(3, 'bytes: ' + hexToStr(byte))
         indentPrint(3, 'ascii: ' + byte.decode('utf-8'))
         byte = f.read(4)
+        # strange bug, datacenter4 contains two zeros before port for unclear reason
+        if (byte == b'\x00\x00\xbb\x01'):
+            f.read(2)
+            byte = b'\xbb\x01\x00\x00'
         indentPrint(2, 'port: ')
         indentPrint(3, 'bytes: ' + hexToStr(byte))
-        indentPrint(3, 'tnum: ' + str(int.from_bytes(byte, 'little')))
+        indentPrint(3, 'num: ' + str(int.from_bytes(byte, 'little')))
+
+
+# Prints info about all the datacenters
+def datacenters(file, numOfDatacenters):
+    for i in range(0, numOfDatacenters):
+        print('\nDATACENTER ' + str(i))
+
+        printByte(1, 'configVersion', file.read(4))
+        printByte(1, 'dataCenterId', file.read(4))
+        printByte(1, 'lastInitVer', file.read(4))
+
+        for ipLabel in ['IPv4', 'IPv6', 'download IPv4', 'download IPv6']:
+            print('\taddress ' + ipLabel + ':')
+            parseIPBytes(file)
+
+        readAuth(file)
+        printByte(1, 'authorized', file.read(4))
+        salts(file)
 
 
 def readAuth(f):
@@ -65,24 +87,6 @@ def salts(f):
         printByte(2, 'validSince', f.read(4))
         printByte(2, 'validUntil', f.read(4))
         printByte(2, 'serverSalt', f.read(8))
-
-
-# Prints info about all the datacenters
-def datacenters(file, numOfDatacenters):
-    for i in range(0, numOfDatacenters):
-        print('\nDATACENTER ' + str(i))
-
-        printByte(1, 'configVersion', file.read(4))
-        printByte(1, 'dataCenterId', file.read(4))
-        printByte(1, 'lastInitVer', file.read(4))
-
-        for ipLabel in ['IPv4', 'IPv6', 'download IPv4', 'download IPv6']:
-            print('\taddress ' + ipLabel + ':')
-            parseBytes(file)
-
-        readAuth(file)
-        printByte(1, 'authorized', file.read(4))
-        salts(file)
 
 
 @click.command()
