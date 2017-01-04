@@ -6,7 +6,7 @@ Few scripts to help to analyse the data stored in the official [Telegram Android
 
 ## tgnet.dat extractor
 
-Extracts the `files/tgnet.dat` file that contains datacenter's IP addresses, master secrets and other. This script parses the tgnet.dat file and prints all the values to standard output.
+Extracts the `files/tgnet.dat` file that contains datacenter's IP addresses, master secrets and other. This script parses the file and prints all the values to standard output.
 
 #### Usage
 
